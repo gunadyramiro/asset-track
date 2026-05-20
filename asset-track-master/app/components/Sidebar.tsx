@@ -29,35 +29,27 @@ export default function Sidebar() {
       {/* Logo */}
       <div className="px-5 py-5 border-b border-gray-100">
         <div className="flex items-center gap-2.5">
-          <div className="w-9 h-9 bg-binus-maroon rounded-lg flex items-center justify-center shrink-0">
+          <div className="w-9 h-9 bg-[#C53030] rounded-lg flex items-center justify-center shrink-0">
             <ScanLine className="w-5 h-5 text-white" />
           </div>
           <div>
-            <p className="font-headline font-bold text-sm leading-tight text-gray-900">RFID Manager</p>
-            <p className="text-[11px] text-binus-taupe leading-tight">Enterprise v2.4</p>
+            <p className="font-headline font-bold text-[15px] leading-tight text-[#C53030]">AssetTrack Pro</p>
+            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider leading-tight">Enterprise RFID</p>
           </div>
         </div>
       </div>
 
-      {/* Scan New Zone */}
-      <div className="px-4 pt-4">
-        <button className="w-full flex items-center justify-center gap-2 py-2.5 bg-binus-maroon hover:bg-[#b81e15] text-white text-sm font-medium rounded-lg transition-colors">
-          <Plus className="w-4 h-4" />
-          Scan New Zone
-        </button>
-      </div>
-
       {/* Nav */}
-      <nav className="flex-1 px-3 pt-3 space-y-0.5">
+      <nav className="flex-1 px-3 pt-3 space-y-0.5 mt-4">
         {navItems.map(({ icon: Icon, label, href }) => {
-          const active = pathname === href
+          const active = pathname === href || (pathname.startsWith(href) && href !== '/');
           return (
             <Link
               key={label}
               href={href}
               className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
                 active
-                  ? 'bg-red-50 text-binus-maroon border-l-4 border-binus-maroon pl-2'
+                  ? 'bg-[#d32f2f] text-white'
                   : 'text-gray-600 hover:bg-gray-50'
               }`}
             >
@@ -68,16 +60,17 @@ export default function Sidebar() {
         })}
       </nav>
 
-      {/* Bottom links */}
-      <div className="px-3 pb-5 space-y-0.5 border-t border-gray-100 pt-3">
-        <a href="#" className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-gray-500 hover:bg-gray-50 transition-colors">
-          <HelpCircle className="w-4 h-4" />
-          Support
-        </a>
-        <a href="#" className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-gray-500 hover:bg-gray-50 transition-colors">
-          <LogOut className="w-4 h-4" />
-          Logout
-        </a>
+      {/* Bottom Profile */}
+      <div className="px-5 py-6 border-t border-gray-100 mt-auto">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-full overflow-hidden shrink-0 border border-gray-200">
+            <img src="https://ui-avatars.com/api/?name=Alex+Mercer&background=1f2937&color=fff" alt="User" className="w-full h-full object-cover" />
+          </div>
+          <div className="overflow-hidden">
+            <p className="text-[13px] font-bold text-gray-900 truncate leading-tight">Alex Mercer</p>
+            <p className="text-[11px] text-gray-500 truncate leading-tight">System Admin</p>
+          </div>
+        </div>
       </div>
     </aside>
   )

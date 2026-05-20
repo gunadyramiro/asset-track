@@ -1,4 +1,4 @@
-// File: D:\asset-track\app\inventory\new\page.tsx
+// File: D:\BINUS\asset-track-master\app\inventory\new\page.tsx
 import * as entry from '../../../../../app/inventory/new/page.js'
 import type { ResolvingMetadata, ResolvingViewport } from 'next/dist/lib/metadata/types/metadata-interface.js'
 

@@ -8,238 +8,335 @@ import {
   Bell,
   History,
   Filter,
-  Plus,
+  Download,
+  PlusSquare,
+  ArrowUp,
+  AlertTriangle,
+  Truck,
+  DollarSign,
   ChevronDown,
   ChevronLeft,
   ChevronRight,
-  AlertTriangle,
-  ArrowRightLeft,
-  CheckCircle2,
-  Pencil,
-  Trash2,
-  Eye,
-  SlidersHorizontal,
+  Package,
+  CheckSquare,
+  Square
 } from 'lucide-react'
 
 // ── Types ──────────────────────────────────────────────────────────────────
-type StatusKey = 'Active' | 'Missing' | 'In Transit'
+type StatusKey = 'In Stock' | 'Low Stock' | 'In-Transit'
 
 interface Asset {
   id: string
   name: string
   category: string
-  location: string
+  locationZone: string
+  locationDetail: string
   status: StatusKey
+  statusCount: number
+  lastAudit: string
+  image: string
 }
 
 // ── Data ───────────────────────────────────────────────────────────────────
 const assets: Asset[] = [
-  { id: 'BNS-3392-CMP-881', name: 'Dell Latitude 7420',    category: 'IT Equipment',  location: 'Fl 3, Rm 302',        status: 'Active' },
-  { id: 'BNS-2898-FUR-842', name: 'Herman Miller Aeron',   category: 'Furniture',      location: 'Fl 2, Open Area B',   status: 'Active' },
-  { id: 'BNS-4404-TST-888', name: 'Fluke 87V Multimeter',  category: 'Testing Gear',   location: 'Lab 4 (Last Seen)',   status: 'Missing' },
-  { id: 'BNS-4488-CMP-815', name: 'MacBook Pro 16"',       category: 'IT Equipment',   location: 'Fl 4, Exec Suite',    status: 'In Transit' },
+  { 
+    id: 'RFID-883A-92', 
+    name: 'ThinkPad X1 Carbon', 
+    category: 'IT Equipment',  
+    locationZone: 'Zone Alpha', 
+    locationDetail: 'Bin 42-B',
+    status: 'In Stock',
+    statusCount: 24,
+    lastAudit: 'Oct 24, 2023',
+    image: 'https://images.unsplash.com/photo-1593642632823-8f785ba67e45?w=64&h=64&fit=crop&auto=format'
+  },
+  { 
+    id: 'RFID-712B-04', 
+    name: 'Makita Impact Driver', 
+    category: 'Industrial Tools',      
+    locationZone: 'Zone Beta', 
+    locationDetail: 'Rack 12-A',
+    status: 'Low Stock',
+    statusCount: 2,
+    lastAudit: 'Oct 20, 2023',
+    image: 'https://images.unsplash.com/photo-1504148455328-c376907d081c?w=64&h=64&fit=crop&auto=format'
+  },
+  { 
+    id: 'RFID-991C-44', 
+    name: 'Herman Miller Aeron',  
+    category: 'Office Furniture',   
+    locationZone: 'Zone Alpha', 
+    locationDetail: 'Floor 3',
+    status: 'In-Transit',
+    statusCount: 12,
+    lastAudit: 'Sep 15, 2023',
+    image: 'https://images.unsplash.com/photo-1505843490538-5133c6c7d0e1?w=64&h=64&fit=crop&auto=format'
+  },
 ]
 
 // ── Status Badge ───────────────────────────────────────────────────────────
-function StatusBadge({ status }: { status: StatusKey }) {
-  if (status === 'Active') {
+function StatusBadge({ status, count }: { status: StatusKey, count: number }) {
+  if (status === 'In Stock') {
     return (
-      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded border border-green-200 bg-white text-green-700 text-xs font-medium">
-        <span className="w-1.5 h-1.5 rounded-full bg-binus-orange inline-block" />
-        Active
+      <span className="inline-flex items-center justify-center gap-1.5 px-3 py-1 rounded-full bg-orange-50 text-orange-600 text-[11px] font-semibold border border-orange-100 whitespace-nowrap">
+        <span className="w-1.5 h-1.5 rounded-full bg-orange-500 shrink-0" />
+        {status} ({count})
       </span>
     )
   }
-  if (status === 'Missing') {
+  if (status === 'Low Stock') {
     return (
-      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded border border-amber-300 bg-amber-50 text-amber-700 text-xs font-medium">
-        <AlertTriangle className="w-3 h-3" />
-        Missing
+      <span className="inline-flex items-center justify-center gap-1.5 px-3 py-1 rounded-full bg-red-50 text-red-600 text-[11px] font-semibold border border-red-100 whitespace-nowrap">
+        {status} ({count})
       </span>
     )
   }
   // In Transit
   return (
-    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded border border-blue-200 bg-blue-50 text-blue-600 text-xs font-medium">
-      <ArrowRightLeft className="w-3 h-3" />
-      In Transit
+    <span className="inline-flex items-center justify-center gap-1.5 px-3 py-1 rounded-full bg-amber-50 text-amber-700 text-[11px] font-semibold border border-amber-100 whitespace-nowrap">
+      {status} ({count})
     </span>
   )
 }
 
 // ── Page ──────────────────────────────────────────────────────────────────
 export default function InventoryPage() {
-  const [categoryFilter] = useState('All Assets')
-  const [statusFilter] = useState('Any Status')
-  const currentPage = 1
   const totalEntries = 1248
-  const perPage = 20
 
   return (
-    <div className="flex min-h-screen bg-[#FAFAF8]">
+    <div className="flex min-h-screen bg-[#FBFBFA]">
       <Sidebar />
 
-      <main className="flex-1 ml-[220px] flex flex-col">
-
+      <main className="flex-1 ml-[220px] flex flex-col min-h-screen">
         {/* ── Top bar ─────────────────────────────────────────────────── */}
         <header className="sticky top-0 z-10 bg-white border-b border-gray-100 px-8 py-3 flex items-center gap-4">
-          {/* Page title inside topbar */}
-          <h2 className="font-headline font-bold text-base text-gray-900 shrink-0">Asset Control</h2>
+          <h2 className="font-semibold text-[15px] text-gray-800 shrink-0">Asset Control</h2>
 
           {/* Search */}
-          <div className="relative flex-1 max-w-xs ml-4">
+          <div className="relative flex-1 max-w-[400px] ml-4">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <input
               type="text"
-              placeholder="Search inventory..."
-              className="w-full pl-9 pr-4 py-2 bg-red-50/60 border border-red-100 rounded-full text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-binus-maroon/20 focus:border-binus-maroon"
+              placeholder="Search assets, zones, or IDs..."
+              className="w-full pl-9 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-binus-maroon/20 focus:border-binus-maroon transition-all"
             />
           </div>
 
-          <div className="flex items-center gap-2 ml-auto">
-            <button className="relative p-2 rounded-full hover:bg-gray-100 transition-colors">
-              <Bell className="w-5 h-5 text-gray-500" />
-              <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-binus-orange rounded-full border border-white" />
+          <div className="flex items-center gap-3 ml-auto">
+            <button className="relative p-2 rounded-full hover:bg-gray-100 transition-colors text-gray-500">
+              <Bell className="w-4 h-4" />
+              <span className="absolute top-2 right-2 w-1.5 h-1.5 bg-orange-500 rounded-full border border-white" />
             </button>
-            <button className="p-2 rounded-full hover:bg-gray-100 transition-colors">
-              <History className="w-5 h-5 text-gray-500" />
+            <button className="p-2 rounded-full hover:bg-gray-100 transition-colors text-gray-500">
+              <History className="w-4 h-4" />
             </button>
-            <div className="w-9 h-9 rounded-full bg-gray-400 overflow-hidden flex items-center justify-center ml-1">
-              <CheckCircle2 className="w-5 h-5 text-white" />
+            <div className="w-8 h-8 rounded-full ml-2 overflow-hidden border border-gray-200">
+              <img src="https://ui-avatars.com/api/?name=User&background=1f2937&color=fff" alt="User" className="w-full h-full object-cover" />
             </div>
           </div>
         </header>
 
         {/* ── Content ─────────────────────────────────────────────────── */}
-        <div className="flex-1 p-8 flex flex-col">
-
-          {/* Page heading row */}
-          <div className="flex items-start justify-between mb-6">
+        <div className="flex-1 p-8">
+          
+          {/* Header Section */}
+          <div className="flex items-start justify-between mb-8">
             <div>
-              <h1 className="font-headline font-bold text-2xl text-gray-900">Registered Assets</h1>
-              <p className="text-sm text-binus-taupe mt-0.5">
-                Manage and monitor{' '}
-                <span className="text-binus-orange font-medium">all active RFID tags</span>{' '}
-                within the facility.
+              <h1 className="text-[28px] font-bold text-gray-900 tracking-tight">Inventory Management</h1>
+              <p className="text-gray-500 text-sm mt-1">
+                Manage, track, and audit active enterprise assets.
               </p>
             </div>
-            <div className="flex items-center gap-2">
-              <button className="inline-flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg text-sm text-gray-700 hover:bg-gray-50 transition-colors">
-                <SlidersHorizontal className="w-4 h-4" />
-                Filter
+            <div className="flex items-center gap-3">
+              <button className="inline-flex items-center gap-2 px-4 py-2.5 bg-white border border-gray-200 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors shadow-sm">
+                <Download className="w-4 h-4 text-gray-500" />
+                Export List
               </button>
-              <Link href="/inventory/new" className="inline-flex items-center gap-2 px-4 py-2 bg-binus-maroon hover:bg-[#b81e15] text-white text-sm font-medium rounded-lg transition-colors">
-                <Plus className="w-4 h-4" />
-                Add New Inventory
+              <Link href="/inventory/new" className="inline-flex items-center gap-2 px-4 py-2.5 bg-[#d32f2f] hover:bg-[#b71c1c] text-white text-sm font-medium rounded-lg transition-colors shadow-sm">
+                <PlusSquare className="w-4 h-4" />
+                Register Asset
               </Link>
             </div>
           </div>
 
-          {/* Table card */}
-          <div className="bg-white rounded-xl border border-gray-100 shadow-sm flex flex-col flex-1">
-
-            {/* Filter bar */}
-            <div className="flex items-center justify-between px-5 py-3.5 border-b border-gray-100">
-              <div className="flex items-center gap-2">
-                <button className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-red-50 border border-red-100 text-binus-maroon text-xs font-medium rounded-md hover:bg-red-100 transition-colors">
-                  {categoryFilter}
-                  <ChevronDown className="w-3 h-3" />
-                </button>
-                <button className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gray-50 border border-gray-200 text-gray-600 text-xs font-medium rounded-md hover:bg-gray-100 transition-colors">
-                  {statusFilter}
-                  <ChevronDown className="w-3 h-3" />
-                </button>
+          {/* Stat Cards */}
+          <div className="grid grid-cols-4 gap-4 mb-8">
+            <div className="bg-white p-5 rounded-xl border border-gray-100 shadow-sm">
+              <div className="flex items-start justify-between mb-4">
+                <p className="text-[13px] font-medium text-gray-500">Total Assets</p>
+                <div className="p-1.5 bg-red-50 border border-red-100 text-[#d32f2f] rounded-md">
+                  <Package className="w-4 h-4" />
+                </div>
               </div>
-              <span className="text-xs text-gray-500 font-mono">
-                Total: <span className="font-semibold text-gray-700">1,248</span>
-              </span>
+              <h3 className="text-2xl font-bold text-gray-900">1,248</h3>
+              <p className="text-[12px] font-medium text-[#d32f2f] flex items-center gap-1 mt-1">
+                <ArrowUp className="w-3 h-3" />
+                +12 this week
+              </p>
+            </div>
+
+            <div className="bg-white p-5 rounded-xl border border-gray-100 shadow-sm">
+              <div className="flex items-start justify-between mb-4">
+                <p className="text-[13px] font-medium text-gray-500">Low Stock Alerts</p>
+                <div className="p-1.5 text-orange-500">
+                  <AlertTriangle className="w-5 h-5" />
+                </div>
+              </div>
+              <h3 className="text-2xl font-bold text-gray-900">12</h3>
+              <p className="text-[12px] text-gray-500 mt-1">Requires immediate attention</p>
+            </div>
+
+            <div className="bg-white p-5 rounded-xl border border-gray-100 shadow-sm">
+              <div className="flex items-start justify-between mb-4">
+                <p className="text-[13px] font-medium text-gray-500">Assets In-Transit</p>
+                <div className="p-1.5 text-blue-500">
+                  <Truck className="w-5 h-5" />
+                </div>
+              </div>
+              <h3 className="text-2xl font-bold text-gray-900">45</h3>
+              <p className="text-[12px] text-gray-500 mt-1">Across 3 zones</p>
+            </div>
+
+            <div className="bg-white p-5 rounded-xl border border-gray-100 shadow-sm">
+              <div className="flex items-start justify-between mb-4">
+                <p className="text-[13px] font-medium text-gray-500">Total Value</p>
+                <div className="p-1.5 bg-red-50 border border-red-100 text-[#d32f2f] rounded-md">
+                  <DollarSign className="w-4 h-4" />
+                </div>
+              </div>
+              <h3 className="text-2xl font-bold text-gray-900">$1.2M</h3>
+              <p className="text-[12px] text-gray-500 mt-1">Estimated book value</p>
+            </div>
+          </div>
+
+          {/* Main Content Area */}
+          <div className="flex gap-6 items-start">
+            
+            {/* Filters Sidebar */}
+            <div className="w-[260px] shrink-0 bg-white border border-gray-100 rounded-xl p-5 shadow-sm">
+              <div className="flex items-center gap-2 mb-6 text-gray-800 font-semibold">
+                <Filter className="w-4 h-4" />
+                <h2>Filters</h2>
+              </div>
+
+              <div className="space-y-6">
+                <div>
+                  <label className="text-[12px] font-medium text-gray-500 mb-2 block">Warehouse / Zone</label>
+                  <button className="w-full flex items-center justify-between px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm text-gray-700 hover:bg-gray-50 transition-colors">
+                    All Zones
+                    <ChevronDown className="w-4 h-4 text-gray-400" />
+                  </button>
+                </div>
+
+                <div>
+                  <label className="text-[12px] font-medium text-gray-500 mb-3 block">Asset Category</label>
+                  <div className="space-y-2.5">
+                    {[
+                      { label: 'IT Equipment', checked: true },
+                      { label: 'Industrial Tools', checked: true },
+                      { label: 'Office Furniture', checked: false },
+                      { label: 'Vehicles', checked: false },
+                    ].map((item) => (
+                      <label key={item.label} className="flex items-center gap-3 cursor-pointer group">
+                        {item.checked ? (
+                          <div className="text-[#d32f2f]">
+                            <CheckSquare className="w-4 h-4" />
+                          </div>
+                        ) : (
+                          <div className="text-gray-300 group-hover:text-gray-400 transition-colors">
+                            <Square className="w-4 h-4" />
+                          </div>
+                        )}
+                        <span className="text-sm text-gray-700">{item.label}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <label className="text-[12px] font-medium text-gray-500 mb-3 block">Stock Status</label>
+                  <div className="flex flex-wrap gap-2">
+                    <button className="px-3 py-1.5 bg-red-50 text-[#d32f2f] text-[12px] font-medium rounded-full border border-red-100 whitespace-nowrap">
+                      In Stock
+                    </button>
+                    <button className="px-3 py-1.5 bg-white text-gray-600 text-[12px] font-medium rounded-full border border-gray-200 hover:bg-gray-50 whitespace-nowrap">
+                      Low Stock
+                    </button>
+                    <button className="px-3 py-1.5 bg-white text-gray-600 text-[12px] font-medium rounded-full border border-gray-200 hover:bg-gray-50 whitespace-nowrap">
+                      Out of Stock
+                    </button>
+                  </div>
+                </div>
+              </div>
             </div>
 
             {/* Table */}
-            <div className="overflow-x-auto flex-1">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="text-left text-xs text-gray-500 border-b border-gray-100">
-                    <th className="px-5 py-3 font-semibold text-gray-700">Asset ID</th>
-                    <th className="px-4 py-3 font-semibold text-gray-700">Item Name</th>
-                    <th className="px-4 py-3 font-semibold text-gray-700">Category</th>
-                    <th className="px-4 py-3 font-semibold text-binus-maroon">Location</th>
-                    <th className="px-4 py-3 font-semibold text-gray-700">Status</th>
-                    <th className="px-4 py-3 font-semibold text-gray-700">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-50">
-                  {assets.map((asset) => (
-                    <tr key={asset.id} className="hover:bg-gray-50/50 transition-colors group">
-                      <td className="px-5 py-3.5 font-mono text-xs text-binus-maroon font-medium">
-                        {asset.id}
-                      </td>
-                      <td className="px-4 py-3.5 text-binus-maroon font-medium hover:underline cursor-pointer">
-                        {asset.name}
-                      </td>
-                      <td className="px-4 py-3.5 text-gray-600">{asset.category}</td>
-                      <td className="px-4 py-3.5 text-binus-orange font-medium">{asset.location}</td>
-                      <td className="px-4 py-3.5">
-                        <StatusBadge status={asset.status} />
-                      </td>
-                      <td className="px-4 py-3.5">
-                        <div className="flex items-center gap-1.5">
-                          <button className="p-1.5 rounded hover:bg-blue-50 text-binus-blue transition-colors" title="View">
-                            <Eye className="w-3.5 h-3.5" />
-                          </button>
-                          <button className="p-1.5 rounded hover:bg-yellow-50 text-yellow-600 transition-colors" title="Edit">
-                            <Pencil className="w-3.5 h-3.5" />
-                          </button>
-                          <button className="p-1.5 rounded hover:bg-red-50 text-red-500 transition-colors" title="Delete">
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
-                        </div>
-                      </td>
+            <div className="flex-1 bg-white border border-gray-100 rounded-xl shadow-sm overflow-hidden flex flex-col">
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm text-left">
+                  <thead>
+                    <tr className="border-b border-gray-100 bg-white">
+                      <th className="px-5 py-4 text-[11px] font-bold text-gray-500 uppercase tracking-wider whitespace-nowrap">Asset ID</th>
+                      <th className="px-5 py-4 text-[11px] font-bold text-gray-500 uppercase tracking-wider whitespace-nowrap">Asset Details</th>
+                      <th className="px-5 py-4 text-[11px] font-bold text-gray-500 uppercase tracking-wider whitespace-nowrap">Location</th>
+                      <th className="px-5 py-4 text-[11px] font-bold text-gray-500 uppercase tracking-wider whitespace-nowrap">Status</th>
+                      <th className="px-5 py-4 text-[11px] font-bold text-gray-500 uppercase tracking-wider whitespace-nowrap">Last Audit</th>
+                      <th className="px-5 py-4 text-[11px] font-bold text-gray-500 uppercase tracking-wider whitespace-nowrap">Actions</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100">
+                    {assets.map((asset) => (
+                      <tr key={asset.id} className="hover:bg-gray-50/50 transition-colors">
+                        <td className="px-5 py-4 align-middle whitespace-nowrap">
+                          <span className="text-[13px] font-medium text-gray-900">{asset.id}</span>
+                        </td>
+                        <td className="px-5 py-4 align-middle">
+                          <div className="flex items-center gap-3 w-max">
+                            <div className="w-10 h-10 rounded-lg bg-gray-100 overflow-hidden shrink-0 border border-gray-200">
+                              <img src={asset.image} alt={asset.name} className="w-full h-full object-cover" />
+                            </div>
+                            <div>
+                              <div className="text-[13px] font-semibold text-gray-900 whitespace-nowrap">{asset.name}</div>
+                              <div className="text-[12px] text-gray-500 mt-0.5 whitespace-nowrap">{asset.category}</div>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-5 py-4 align-middle whitespace-nowrap">
+                          <div className="text-[13px] font-medium text-gray-900">{asset.locationZone}</div>
+                          <div className="text-[12px] text-gray-500 mt-0.5">{asset.locationDetail}</div>
+                        </td>
+                        <td className="px-5 py-4 align-middle whitespace-nowrap">
+                          <StatusBadge status={asset.status} count={asset.statusCount} />
+                        </td>
+                        <td className="px-5 py-4 align-middle whitespace-nowrap">
+                          <span className="text-[13px] text-gray-700">{asset.lastAudit}</span>
+                        </td>
+                        <td className="px-5 py-4 align-middle whitespace-nowrap">
+                          {/* Empty actions to match image */}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
 
-            {/* Pagination */}
-            <div className="flex items-center justify-between px-5 py-3.5 border-t border-gray-100">
-              <p className="text-xs text-gray-500">
-                Showing{' '}
-                <span className="font-medium text-gray-700">
-                  {(currentPage - 1) * perPage + 1}
-                </span>{' '}
-                to{' '}
-                <span className="font-medium text-gray-700">
-                  {Math.min(currentPage * perPage, totalEntries)}
-                </span>{' '}
-                of{' '}
-                <span className="font-medium text-gray-700">{totalEntries.toLocaleString('en-US')}</span>{' '}
-                entries
-              </p>
-
-              <div className="flex items-center gap-1">
-                <button className="p-1.5 rounded hover:bg-gray-100 text-gray-500 disabled:opacity-40 transition-colors" disabled>
-                  <ChevronLeft className="w-4 h-4" />
-                </button>
-                {[1, 2, 3].map((page) => (
-                  <button
-                    key={page}
-                    className={`w-7 h-7 rounded text-xs font-medium transition-colors ${
-                      page === currentPage
-                        ? 'bg-binus-maroon text-white'
-                        : 'text-gray-600 hover:bg-gray-100'
-                    }`}
-                  >
-                    {page}
+              {/* Table Footer */}
+              <div className="px-6 py-4 border-t border-gray-100 flex items-center justify-between bg-white">
+                <span className="text-[13px] text-gray-500">
+                  Showing 1 to 3 of {totalEntries.toLocaleString()} assets
+                </span>
+                <div className="flex items-center gap-1">
+                  <button className="w-8 h-8 flex items-center justify-center rounded border border-gray-200 text-gray-400 bg-gray-50 disabled:opacity-50" disabled>
+                    <ChevronLeft className="w-4 h-4" />
                   </button>
-                ))}
-                <button className="p-1.5 rounded hover:bg-gray-100 text-gray-500 transition-colors">
-                  <ChevronRight className="w-4 h-4" />
-                </button>
+                  <button className="w-8 h-8 flex items-center justify-center rounded border border-gray-200 text-gray-600 hover:bg-gray-50 transition-colors">
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
+                </div>
               </div>
             </div>
-
           </div>
+
         </div>
       </main>
     </div>

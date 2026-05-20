@@ -1,4 +1,4 @@
-// File: D:\asset-track\app\live-scanner\page.tsx
+// File: D:\BINUS\asset-track-master\app\live-scanner\page.tsx
 import * as entry from '../../../../app/live-scanner/page.js'
 import type { ResolvingMetadata, ResolvingViewport } from 'next/dist/lib/metadata/types/metadata-interface.js'
 
