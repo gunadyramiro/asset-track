@@ -1,0 +1,19 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --font-inter: var(--font-inter);
+  --font-hanken-grotesk: var(--font-hanken-grotesk);
+  --font-jetbrains-mono: var(--font-jetbrains-mono);
+}
+
+body {
+  background-color: #FAFAF8;
+}
+
+.glass-effect {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
